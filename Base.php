@@ -48,11 +48,17 @@ class Base
     }
 
     /**
-     * @param int $value
+     * @param string $value
      */
 	public function updateSum($value)
     {
-        $sql = 'UPDATE `test` SET `sum` = `sum` + ' . $value;
+        $records = 'SELECT `sum` FROM `test`';
+        $query = self::$db->prepare($records);
+        $query->execute();
+        $result = $query->fetch(PDO::FETCH_ASSOC);
+        $newSum = bcadd($value, $result['sum']);
+
+        $sql = 'UPDATE `test` SET `sum` = ' . $newSum;
         return $this->update($sql);
     }
 
@@ -60,10 +66,10 @@ class Base
      * @param string $fieldName
      * @param int $value
      */
-    public function updateCount($fieldName, $value)
+    public function updateCount($fieldName)
     {
         if (in_array($fieldName, $this->available)) {
-            $sql = 'UPDATE `test` SET `'.$fieldName.'` = '.$value;
+            $sql = 'UPDATE `test` SET `'.$fieldName.'` = `'.$fieldName.'` + 1';
             return $this->update($sql);
         } else {
             exit('Unknown field name!');
